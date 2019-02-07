@@ -294,7 +294,7 @@ class OktaAWS(object):
         logging.debug("Command: %s", command)
 
         try:
-            output = subprocess.check_output(command, env=newenv)
+            output = subprocess.run(command, env=newenv, capture_output=True)
         except OSError as e:
             if e.errno == 2:
                 raise exceptions.AssumeRoleError("AWS CLI cannot be found")
@@ -305,9 +305,9 @@ class OktaAWS(object):
                                              e.returncode)
 
         try:
-            aws_creds = json.loads(output.decode('utf-8'))
+            aws_creds = json.loads(output.stdout.decode('utf-8'))
         except json.decoder.JSONDecodeError as e:
-            logging.debug("Output was: %s" % output.decode('utf-8'))
+            logging.debug("Output was: %s" % output.stdout.decode('utf-8'))
             raise exceptions.AssumeRoleError("JSON decode error: %s" % e)
 
         if 'Credentials' not in aws_creds:
